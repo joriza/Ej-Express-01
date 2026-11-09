@@ -24,9 +24,9 @@ Documentación complementaria: [`docs/ERRORES-Y-CORRECCIONES.md`](docs/ERRORES-Y
 
 ## Instalación desde cero en un equipo nuevo
 
-### 1. Instalar Node.js (requisito: versión 22 o superior)
+### 1. Instalar Node.js (requisito: versión 22.5 o superior)
 
-La dependencia `better-sqlite3` exige **Node ≥ 22**; recomendado la versión LTS vigente.
+La base usa `node:sqlite`, el driver de SQLite **incluido en Node** (nada extra que instalar), que exige **Node ≥ 22.5**; recomendado la versión LTS vigente.
 
 | Sistema | Cómo instalar |
 | --------- | --------------- |
@@ -34,7 +34,7 @@ La dependencia `better-sqlite3` exige **Node ≥ 22**; recomendado la versión L
 | macOS | Instalador de <https://nodejs.org>, o con Homebrew: `brew install node@22` |
 | Linux (Debian/Ubuntu) | `sudo apt install nodejs npm` (si el repositorio trae una versión vieja, usar los paquetes de <https://github.com/nodesource/distributions>) |
 
-Verificar la instalación (ambos comandos deben responder con versión ≥ 22):
+Verificar la instalación (ambos comandos deben responder con versión ≥ 22.5):
 
 ```bash
 node -v
@@ -55,7 +55,7 @@ Desde la carpeta del proyecto:
 npm install
 ```
 
-Esto lee `package.json` y descarga Express y better-sqlite3 en `node_modules/`. Puede tardar unos minutos (better-sqlite3 incluye un binario nativo).
+Esto lee `package.json` y descarga Express en `node_modules/`. Es rápido: ya no hay dependencias nativas que compilar.
 
 ### 4. Levantar el servidor
 
@@ -92,7 +92,7 @@ Navegador en <http://localhost:3000/> — cargá un producto con el formulario y
 Opción A — con Node (ya lo tenés por el paso 1; usar **PowerShell o Git Bash** en Windows):
 
 ```bash
-node -e 'const db=require("better-sqlite3")("mi_base_de_datos.db");db.exec(require("fs").readFileSync("poblar_base.sql","utf8"));console.log("Productos en la base:",db.prepare("SELECT COUNT(*) AS c FROM productos").get().c)'
+node -e 'const db=require("node:sqlite").DatabaseSync("mi_base_de_datos.db");db.exec(require("fs").readFileSync("poblar_base.sql","utf8"));console.log("Productos en la base:",db.prepare("SELECT COUNT(*) AS c FROM productos").get().c)'
 ```
 
 Opción B — con el cliente `sqlite3` (si lo tenés instalado; viene aparte de Node):
@@ -199,6 +199,6 @@ Guía completa del viaje etapa por etapa (con comandos verificados en cada tag):
 | --------- | ------- | ---------- |
 | `EADDRINUSE` / puerto 3000 ocupado | Ya hay otro proceso en ese puerto (probablemente otra instancia del server) | Detener la otra instancia, o usar otro puerto: `PORT=3100 node src/server.js` |
 | `Cannot GET /` | El servidor no tiene montado `express.static` (versión vieja del código) o entraste por un puerto distinto al que escucha | Confirmar el puerto del mensaje de arranque y la versión de `src/server.js` |
-| `npm install` falla compilando better-sqlite3 | Node viejo o faltan herramientas de compilación | Verificar `node -v` ≥ 22; en Windows reinstalar con el instalador oficial LTS |
+| `DatabaseSync is not a function` o aviso de `node:sqlite` ausente | Node viejo: `node:sqlite` existe desde la versión 22.5 | Verificar `node -v` ≥ 22.5; en Windows reinstalar con el instalador oficial LTS |
 | Guardo y no aparece nada | El frontend no llega al servidor: revisar consola del navegador (F12) y pestaña Network | Ver [`docs/ERRORES-Y-CORRECCIONES.md`](docs/ERRORES-Y-CORRECCIONES.md) |
 | Abrí el HTML como archivo (`file://`) | Las rutas `/api/...` no resuelven sin servidor | Entrar siempre por `http://localhost:3000/` |

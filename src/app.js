@@ -1,7 +1,7 @@
 // ============================================================
 // app.js — Aplicación Express del CRUD de productos (zz-js01)
 //
-// Stack: Node.js + Express 5 + better-sqlite3 (SQLite)
+// Stack: Node.js + Express 5 + node:sqlite (SQLite builtin de Node)
 //
 // Mapa de la API (todas las rutas bajo /api/productos):
 //   GET    /api/productos      → lista todos                  (200)

@@ -1,23 +1,31 @@
 // ============================================================
 // db.js — Conexión a la base SQLite (zz-js01)
 //
-// better-sqlite3: driver de SQLite. Es SINCRÓNICO: cada consulta
-// bloquea hasta terminar (no usa callbacks ni promesas).
+// node:sqlite: driver de SQLite INCLUIDO en Node (builtin desde
+// v22.5; no se instala nada con npm). Es SINCRÓNICO: cada consulta
+// bloquea hasta terminar, sin callbacks ni promesas (la misma
+// ergonomía que tenía better-sqlite3, el driver que este proyecto
+// usaba antes). La ventaja de node:sqlite es la PORTABILIDAD:
+// al no compilar un binario nativo, el mismo código corre igual
+// en Windows, en Linux y en la nube (ZCode Sites usa Node 24).
+// Node lo marca todavía como experimental: emite un aviso inocuo
+// por consola que se puede ignorar.
 // La base completa vive en un solo archivo .db en el disco.
 // ============================================================
 
-const fs = require("fs"); // builtin de Node: para leer el archivo poblar_base.sql (sin instalar nada)
-const Database = require("better-sqlite3");
+const fs = require("fs"); // builtin de Node: para leer el archivo poblar_base.sql (seed)
+const { DatabaseSync } = require("node:sqlite"); // builtin de Node: driver SQLite, sin instalar nada
 
 // La ruta del archivo de base se puede cambiar con la variable de
 // entorno DB_PATH (los tests la apuntan a un archivo temporal para
-// no tocar la base real). Sin esa variable, se usa la de siempre.
+// no tocar la base real; el despliegue la apunta al almacenamiento
+// temporal de la instancia). Sin esa variable, se usa la de siempre.
 const DB_PATH = process.env.DB_PATH || "mi_base_de_datos.db";
 
 // Abre la base (o crea el archivo si no existe). No hay un servidor
 // de base de datos separado: todo queda en un único archivo .db en
 // el disco (mi_base_de_datos.db, salvo que DB_PATH diga otra cosa).
-const db = new Database(DB_PATH);
+const db = new DatabaseSync(DB_PATH);
 
 // Se ejecuta una sola vez al arrancar. IF NOT EXISTS crea la tabla
 // solo si falta: permite reiniciar el servidor sin perder datos y
@@ -37,14 +45,15 @@ db.exec(`
 // servidor y la base no existía, src/server.js te pregunta si
 // querés poblarla. Esta función lee un archivo .sql completo
 // (utf8) y lo ejecuta de una sola vez con db.exec(), que acepta
-// VARIAS sentencias seguidas: el INSERT de los 5 productos de
+// VARIAS sentencias seguidas: los INSERT de los 5 productos más
 // su SELECT final de verificación.
 //
 // ⚠ MISMA ADVERTENCIA que adentro de poblar_base.sql: la tabla
 // productos NO tiene restricción UNIQUE, así que ejecutar el
 // script DOS VECES inserta los productos duplicados. Esta función
 // no verifica nada de eso: confía en que quien la llama la use
-// una sola vez (en la práctica, solo cuando la base era nueva).
+// una sola vez (en la práctica, solo cuando la base era nueva o
+// está vacía).
 // ============================================================
 function poblarDesdeArchivo(rutaSql) {
   const sql = fs.readFileSync(rutaSql, "utf8"); // se lee TODO el archivo a un string
@@ -56,6 +65,8 @@ function poblarDesdeArchivo(rutaSql) {
 //    (routes/productos.js) la destructuran al requerir este módulo.
 //  - poblarDesdeArchivo: la función de seed de arriba; la usa
 //    src/server.js solo cuando la base se crea por primera vez.
-// Ojo al cambio de forma: antes se exportaba `db` directamente, y
-// quien requiera ../db ahora recibe { db, poblarDesdeArchivo }.
+// La API de node:sqlite es equivalente a la que usaban las rutas:
+// db.prepare(sql) devuelve una sentencia con .all() / .get() /
+// .run(...valores), y run() devuelve { changes, lastInsertRowid },
+// exactamente lo mismo que consumen app.js y routes/productos.js.
 module.exports = { db, poblarDesdeArchivo };
