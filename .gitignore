@@ -3,6 +3,12 @@
 .codegraph/
 .pi/
 
+# Local Engram project scope
+.engram/
+
+# ZCode Sites deploy staging
+.zcode-site/
+
 # Dependencies
 node_modules/
 
