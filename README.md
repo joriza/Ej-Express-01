@@ -1,5 +1,7 @@
 # zz-js01 — CRUD de productos (Express + SQLite)
 
+> **Demo pública de prueba** (desplegada con ZCode Sites): <https://crud-productos-2ynw.zai-ai.site> — la base se siembra automáticamente con los 5 productos de ejemplo al arrancar y vuelve a ese estado si la instancia se recicla.
+
 Mini aplicación web de aprendizaje: un **CRUD completo** de productos — formulario para **crear y editar**, tabla que **lista** y **borra** — con backend Node.js + Express y base de datos SQLite en un solo archivo.
 
 ```
